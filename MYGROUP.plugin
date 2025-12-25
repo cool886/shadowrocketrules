@@ -4,7 +4,6 @@ description = 直连规则集，超11万条，每日更新
 icon = https://example.com/icon.png (可选，自定义图标链接)
 
 [Rule]
-[Rule]
 DOMAIN-SUFFIX,7wsh.net,MYGROUP
 DOMAIN-SUFFIX,zm-introduce.com,MYGROUP
 DOMAIN-SUFFIX,evpartner.com,MYGROUP
