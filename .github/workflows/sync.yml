@@ -23,8 +23,8 @@ jobs:
           
           # 【修改这里】使用 curl 下载别人的规则，并保存到你的 rules 文件夹下
           # 格式: curl -sL "别人的 Raw 链接" -o 本地保存路径
-          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_proxy_list.module" -o rules/my_rule2.list
-          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_reject_list.module" -o rules/my_rule3.list
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_proxy_list.module" -o rules/Proxy.module
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_reject_list.module" -o rules/reject.module
           
           
           # 如果你想同步多个文件，可以继续在下面加 curl 命令
