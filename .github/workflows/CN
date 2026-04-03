@@ -1,0 +1,49 @@
+name: Auto Fetch and Modify Rules
+
+# 触发条件：每天北京时间早上 8 点自动执行，或者手动点击运行
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  process-rules:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出你当前仓库的代码
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      # 2. 下载并替换文本
+      - name: Download and Modify
+        run: |
+          # 创建存放规则的文件夹
+          mkdir -p rules
+          
+          echo "开始下载并处理规则..."
+          
+          # 第一步：用 curl 下载源文件，临时保存为 temp.txt
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_direct_list.module" -o temp.txt
+          
+          # 第二步：使用 sed 命令，将 temp.txt 里所有的 DIRECT 替换为 CN，并保存到你的目标文件 sr_cn_list.module
+          sed 's/DIRECT/CN/g' temp.txt > rules/sr_cn_list.module
+          
+          # 第三步：删掉临时文件，保持仓库干净
+          rm temp.txt
+          
+          echo "处理完成！"
+
+      # 3. 将修改后的文件推送到你的仓库
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add rules/sr_cn_list.module
+          
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto update and replace DIRECT to CN: $(date +'%Y-%m-%d')"
+            git push
+          else
+            echo "源文件未更新，跳过提交。"
+          fi
