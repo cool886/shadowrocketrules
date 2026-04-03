@@ -1,0 +1,49 @@
+name: Auto Sync Upstream Rules
+
+# 触发条件
+on:
+  schedule:
+    # 定时任务：每天 UTC 时间 0 点（北京时间早上 8 点）自动执行一次
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许你在 GitHub 网页上手动点击运行测试
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 运行环境
+    steps:
+      # 1. 检出你当前仓库的代码
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      # 2. 下载别人的规则文件
+      - name: Download latest rules
+        run: |
+          # 创建一个存放规则的文件夹（如果不存在）
+          mkdir -p rules
+          
+          # 【修改这里】使用 curl 下载别人的规则，并保存到你的 rules 文件夹下
+          # 格式: curl -sL "别人的 Raw 链接" -o 本地保存路径
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_proxy_list.module" -o rules/my_rule2.list
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_reject_list.module" -o rules/my_rule3.list
+          
+          
+          # 如果你想同步多个文件，可以继续在下面加 curl 命令
+          # curl -sL "https://example.com/rule2.txt" -o rules/rule2.txt
+
+      # 3. 将变动提交并推送到你的仓库
+      - name: Commit and Push changes
+        run: |
+          # 配置虚拟机器人的 Git 账号信息
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 将所有变动添加到暂存区
+          git add .
+          
+          # 检查是否有文件发生变化（别人没更新时，你的文件也不会变，避免报错）
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto update rules: $(date +'%Y-%m-%d %H:%M:%S')"
+            git push
+          else
+            echo "No changes detected. Skip commit."
+          fi
