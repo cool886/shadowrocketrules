@@ -1,0 +1,46 @@
+name: Auto Fetch and Convert for Egern
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  process-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      - name: Download and Convert to Egern Format
+        run: |
+          mkdir -p rules
+          echo "开始下载并转换为 Egern 格式..."
+          
+          # 1. 写入 Egern/Clash 规范的 YAML 头部
+          echo "payload:" > rules/egern_direct.yaml
+          
+          # 2. 链式命令处理：下载 -> 过滤废话 -> 删掉策略 -> 增加缩进格式 -> 保存
+          curl -sL "https://raw.githubusercontent.com/GMOogway/shadowrocket-rules/master/sr_direct_list.module" | \
+          grep -vE "^(#|\[|[[:space:]]*$)" | \
+          sed 's/,DIRECT.*//g' | \
+          sed 's/^/  - /g' >> rules/egern_direct.yaml
+          
+          echo "处理完成！"
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add rules/egern_direct.yaml
+          
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto convert Egern rules: $(date +'%Y-%m-%d')"
+            git push
+          else
+            echo "源文件未更新，跳过提交。"
+          fi
